@@ -1,4 +1,4 @@
-cordova.define("com.smartmobilesoftware.inappbilling.InAppBillingPlugin", function(require, exports, module) {/*
+/*
  * Copyright (C) 2012-2013 by Guillaume Charhon
  * Modifications 10/16/2013 by Brian Thurlow
  */
@@ -100,4 +100,4 @@ InAppBilling.prototype.getProductDetails = function (success, fail, skus) {
     }
 };
 
-module.exports = new InAppBilling();});
+module.exports = new InAppBilling();

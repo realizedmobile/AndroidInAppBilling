@@ -1,4 +1,4 @@
-/*
+cordova.define("com.smartmobilesoftware.inappbilling.InAppBillingPlugin", function(require, exports, module) {/*
  * Copyright (C) 2012-2013 by Guillaume Charhon
  * Modifications 10/16/2013 by Brian Thurlow
  */
@@ -10,7 +10,7 @@ var InAppBilling = function () {
     this.options = {};
 };
 
-InAppBilling.prototype.init = function (success, fail, options, skus) {
+InAppBilling.prototype.init = function (success, fail, options, base64, skus) {
 	options || (options = {});
 
 	this.options = {
@@ -40,10 +40,10 @@ InAppBilling.prototype.init = function (success, fail, options, skus) {
 	}
 	
 	if(hasSKUs){
-		return cordova.exec(success, fail, "InAppBillingPlugin", "init", [skus]);
+		return cordova.exec(success, fail, "InAppBillingPlugin", "init", [base64, skus]);
     }else {
         //No SKUs
-		return cordova.exec(success, fail, "InAppBillingPlugin", "init", []);
+		return cordova.exec(success, fail, "InAppBillingPlugin", "init", [base64]);
     }
 };
 InAppBilling.prototype.getPurchases = function (success, fail) {
@@ -100,4 +100,4 @@ InAppBilling.prototype.getProductDetails = function (success, fail, skus) {
     }
 };
 
-module.exports = new InAppBilling();
+module.exports = new InAppBilling();});

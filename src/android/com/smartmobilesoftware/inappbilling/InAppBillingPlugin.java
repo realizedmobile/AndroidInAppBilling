@@ -6,24 +6,23 @@
  */
 package com.smartmobilesoftware.inappbilling;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONException;
+import android.content.Intent;
+import android.util.Log;
 
-import java.util.List;
-import java.util.ArrayList;
-
-import org.apache.cordova.CallbackContext;
-import org.apache.cordova.CordovaPlugin;
-
-import com.smartmobilesoftware.util.Purchase;
 import com.smartmobilesoftware.util.IabHelper;
 import com.smartmobilesoftware.util.IabResult;
 import com.smartmobilesoftware.util.Inventory;
+import com.smartmobilesoftware.util.Purchase;
 import com.smartmobilesoftware.util.SkuDetails;
 
-import android.content.Intent;
-import android.util.Log;
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaPlugin;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class InAppBillingPlugin extends CordovaPlugin {
 	private final Boolean ENABLE_DEBUG_LOGGING = true;
@@ -41,8 +40,7 @@ public class InAppBillingPlugin extends CordovaPlugin {
      * want to make it easy for an attacker to replace the public key with one
      * of their own and then fake messages from the server.
      */
-    private final String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkYbZ4R1GpZTO1GAA2FK6iC0QdXY56GT5oQtmsovDnPBALuSQ2Y02HVKh12E3r36GLzDjtyoJnNNq5UQf2jOblWxzwYHAsjl4nzhmkE7I66Twnn8G/ynqbVZxiotjSoT9L6B3RUI5vSy18ewLfxYgXq6gr46SsAa3N6urr2Wjbp5Z3rhv1LfzFcUrb2sAzy4T6QkDN9ybwYJt1X6ig58khduhh5KKjVIVGKlV51ewi9sCUGoex3F2sW/qll1mMKSXWe9qvkDKUug3dTdp2Acns/wbQVWcOGO6nwoFBR8VXPchIvHfoNmHb9eFWCW/cIlvzVipA3wOXCFPn0jwsUkq/QIDAQAB";
-    
+//    private final String base64EncodedPublicKey = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAp+eOJdOWXeZZJQQtkKIRYhBHnD8Vy3sWSqgS/hr+gdxYIwamFmI1+FjCptKL5ryw0bXF1fQl9ZFTmypRTbDB3sdzCJrKqlNq60LBEXmlIlsTxnDHfpvO9AsoElV/ahhFWBfxBZjcUsdSw8K4eAMlzgL+g73U1OyNnYS2IHtuzcaGyNxIRFWS9lCSmb886vNJ7NBvmVuIiDbNXVTFFW9c98lD3XakHGLTmrOqHOw3sY1RSWRkIkyh/6w1+hJ0hde/78C/PZwORUxc7kNtGTXSV8xogRppUWdJ5FneUW3nksQ9gom2N20YkrvMkddrjhJg7jaRnY+d80k2Z2IjwGJqNQIDAQAB";
     // (arbitrary) request code for the purchase flow
     static final int RC_REQUEST = 10001;
     
@@ -62,22 +60,26 @@ public class InAppBillingPlugin extends CordovaPlugin {
 		this.callbackContext = callbackContext;
 		// Check if the action has a handler
 		Boolean isValidAction = true;
-		
+		String base64 = "";
 		try {
 			// Action selector
 			if ("init".equals(action)) {
 				final List<String> sku = new ArrayList<String>();
+
 				if(data.length() > 0){
-					JSONArray jsonSkuList = new JSONArray(data.getString(0));
-					int len = jsonSkuList.length();
-					Log.d(TAG, "Num SKUs Found: "+len);
-	   			 for (int i=0;i<len;i++){
-	    				sku.add(jsonSkuList.get(i).toString());
-						Log.d(TAG, "Product SKU Added: "+jsonSkuList.get(i).toString());
-	   			 }
+                    base64 = data.getString(0);
+                    if (data.length() > 1) {
+                        JSONArray jsonSkuList = new JSONArray(data.getString(1));
+                        int len = jsonSkuList.length();
+                        Log.d(TAG, "Num SKUs Found: "+len);
+                        for (int i=0;i<len;i++){
+                            sku.add(jsonSkuList.get(i).toString());
+                            Log.d(TAG, "Product SKU Added: "+jsonSkuList.get(i).toString());
+                        }
+                    }
 				}
 				// Initialize
-				init(sku);
+				init(base64, sku);
 			} else if ("getPurchases".equals(action)) {
 				// Get the list of purchases
 				JSONArray jsonSkuList = new JSONArray();
@@ -127,7 +129,7 @@ public class InAppBillingPlugin extends CordovaPlugin {
 	}
 	
 	// Initialize the plugin
-	private void init(final List<String> skus){
+	private void init(final String base64EncodedPublicKey, final List<String> skus){
 		Log.d(TAG, "init start");
 		// Some sanity checks to see if the developer (that's you!) really followed the
         // instructions to run this plugin
